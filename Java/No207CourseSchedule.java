@@ -1,5 +1,8 @@
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * @lc app=leetcode id=207 lang=java
@@ -8,27 +11,31 @@ import java.util.HashSet;
  */
 class No207CourseSchedule {
     public boolean canFinish(int numCourses, int[][] prerequisites) {
-        int[] inDegree = new int[numCourses];
-        List<Set<Integer>> edges = new ArrayList<>();
-        for(int i=0; i<numCourses; i++) {
-            edges.add(new HashSet<>());
+        Map<Integer,List<Integer>> map = new HashMap<>();
+        for(int[] record : prerequisites){
+            List<Integer> list = map.getOrDefault(record[0], new ArrayList<>());
+            list.add(record[1]);
+            map.put(record[0], list);
         }
-        for(int[] req : prerequisites) {
-            int from = req[1];
-            int to = req[0];
-            inDegree[to]++;
-            edges.get(from).add(to);
-        }
-        for(int i=0; i<numCourses; i++) {
-            int course = 0;
-            for(; course<numCourses; course++) {
-                if(inDegree[course]==0) break;
+        Set<Integer> set = new HashSet<>();
+        List<Integer> togo = new ArrayList<>();
+        while(!map.isEmpty()){
+            if(togo.isEmpty()) {
+                togo.add(map.keySet().iterator().next());
+                set.clear();
             }
-            if(course == numCourses) return false;
-            inDegree[course] = -1;
-            for(int c : edges.get(course)){
-                inDegree[c] = inDegree[c]-1;
+            List<Integer> temp = new ArrayList<>();
+            for(int i : togo) {
+                List<Integer> v = map.remove(i);
+                if(v!=null){
+                    for(int j : v) {
+                        if(set.contains(j)) return false;
+                    }
+                    temp.addAll(v);
+                    set.add(i);
+                }
             }
+            togo = temp;
         }
         return true;
     }
